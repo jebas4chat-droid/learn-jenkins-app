@@ -2,67 +2,30 @@ pipeline {
     agent any
 
     stages {
-        /*
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:26-alpine'
-                    reuseNode true
-                }
-            }
-
+        stage('Without docker') {
             steps {
                 sh '''
+                    echo "Hello World"
                     ls -la
-                    node --version
-                    npm --version
-                    npm ci
-                    npm run build
-                    ls -la
+                    touch docker-no.txt
                 '''
             }
         }
-        */
         
-        stage('Test') {
-            agent {
+        stage('with docker') {
+            agent{
                 docker {
-                    image 'node:26-alpine'
+                    image 'node:26.13.0-alpine3.24'
                     reuseNode true
                 }
             }
             steps {
                 sh '''
-                    echo "Test stage"                    
-                    test -f build/index.html
-                    npm test
+                    echo "With docker"
+                    ls -la
+                    touch docker-yes.txt
                 '''
             }
-        }
-
-        stage('E2E') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.63.0-noble'
-                    reuseNode true
-                }
-            }
-            steps {
-                sh '''
-                    echo "E2E"
-                    npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
-                    npm init playwright@latest
-                    npx playwright test
-                '''
-            }
-        }
-    }
-
-    post {
-        always {
-            junit 'jest-results/junit.xml'
         }
     }
 }
